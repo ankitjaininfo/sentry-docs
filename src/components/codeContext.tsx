@@ -191,6 +191,65 @@ export async function fetchCodeKeywords(): Promise<CodeKeywords> {
   };
 }
 
+function getCsrfToken(cookies = document.cookie): string | null {
+  // is sentry-sc in production, but may also be sc in other envs
+  // So we just try both variants
+  const cookieNames = ['sentry-sc', 'sc'];
+
+  return cookieNames
+    .map(cookieName => getCookie(cookies, cookieName))
+    .find(token => token !== null);
+}
+
+function getCookie(cookies: string, cookieName: string) {
+  const csrfCookie = cookies.split(';').find(cookie => {
+    const str = cookie.trim();
+    return str.startsWith(`${cookieName}=`);
+  });
+
+  return csrfCookie ? csrfCookie.split('=')[1] : null;
+}
+
+export async function createOrgAuthToken({
+  orgSlug,
+  name,
+}: {
+  name: string;
+  orgSlug: string;
+}) {
+  const baseUrl =
+    process.env.NODE_ENV === 'development'
+      ? 'http://dev.getsentry.net:8000/'
+      : 'https://sentry.io';
+
+  const url = `${baseUrl}/api/0/organizations/${orgSlug}/org-auth-tokens/`;
+
+  const body = {name};
+
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json; charset=utf-8',
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+    });
+
+    if (!resp.ok) {
+      return null;
+    }
+
+    const json = await resp.json();
+
+    return json.token;
+  } catch {
+    return null;
+  }
+}
+
 export function useCodeContextState(fetcher = fetchCodeKeywords): CodeContextType {
   const [codeKeywords, setCodeKeywords] = useState(cachedCodeKeywords ?? DEFAULTS);
 
