@@ -54,6 +54,7 @@
     "gatsby-transformer-json": "^4.0.0",
     "gatsby-transformer-remark": "^5.0.0",
     "gray-matter": "^4.0.2",
+    "js-cookie": "^3.0.5",
     "js-yaml": "^3.0.0",
     "jsdom": "^22.1.0",
     "platformicons": "^5.6.0",

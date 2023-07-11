@@ -1,4 +1,5 @@
 import {createContext, useEffect, useState} from 'react';
+import Cookies from 'js-cookie';
 
 type ProjectCodeKeywords = {
   API_URL: string;
@@ -189,23 +190,14 @@ export async function fetchCodeKeywords(): Promise<CodeKeywords> {
   };
 }
 
-function getCsrfToken(cookies = document.cookie): string | null {
+function getCsrfToken(): string | null {
   // is sentry-sc in production, but may also be sc in other envs
   // So we just try both variants
   const cookieNames = ['sentry-sc', 'sc'];
 
   return cookieNames
-    .map(cookieName => getCookie(cookies, cookieName))
+    .map(cookieName => Cookies.get(cookieName))
     .find(token => token !== null);
-}
-
-function getCookie(cookies: string, cookieName: string) {
-  const csrfCookie = cookies.split(';').find(cookie => {
-    const str = cookie.trim();
-    return str.startsWith(`${cookieName}=`);
-  });
-
-  return csrfCookie ? csrfCookie.split('=')[1] : null;
 }
 
 export async function createOrgAuthToken({
