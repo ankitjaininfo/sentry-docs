@@ -1,7 +1,5 @@
 import {createContext, useEffect, useState} from 'react';
 
-type CodeContextStatus = 'loading' | 'loaded';
-
 type ProjectCodeKeywords = {
   API_URL: string;
   DSN: string;
@@ -84,12 +82,12 @@ const DEFAULTS: CodeKeywords = {
 
 type CodeContextType = {
   codeKeywords: CodeKeywords;
+  isLoading: boolean;
   sharedCodeSelection: [string | null, React.Dispatch<string | null>];
   sharedKeywordSelection: [
     Record<string, number>,
     React.Dispatch<Record<string, number>>
   ];
-  status: CodeContextStatus;
 };
 
 export const CodeContext = createContext<CodeContextType | null>(null);
@@ -253,20 +251,18 @@ export async function createOrgAuthToken({
 export function useCodeContextState(fetcher = fetchCodeKeywords): CodeContextType {
   const [codeKeywords, setCodeKeywords] = useState(cachedCodeKeywords ?? DEFAULTS);
 
-  const [status, setStatus] = useState<CodeContextStatus>(
-    cachedCodeKeywords ? 'loaded' : 'loading'
-  );
+  const [isLoading, setIsLoading] = useState<boolean>(cachedCodeKeywords ? false : true);
 
   useEffect(() => {
     if (cachedCodeKeywords === null) {
-      setStatus('loading');
+      setIsLoading(true);
       fetcher().then((config: CodeKeywords) => {
         cachedCodeKeywords = config;
         setCodeKeywords(config);
-        setStatus('loaded');
+        setIsLoading(false);
       });
     }
-  }, [setStatus, setCodeKeywords, fetcher]);
+  }, [setIsLoading, setCodeKeywords, fetcher]);
 
   // sharedKeywordSelection maintains a global mapping for each "keyword"
   // namespace to the index of the selected item.
@@ -282,7 +278,7 @@ export function useCodeContextState(fetcher = fetchCodeKeywords): CodeContextTyp
     codeKeywords,
     sharedCodeSelection,
     sharedKeywordSelection,
-    status,
+    isLoading,
   };
 
   return result;
