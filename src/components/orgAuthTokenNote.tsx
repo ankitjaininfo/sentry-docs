@@ -1,6 +1,6 @@
 import React from 'react';
 import {useLocation} from '@reach/router';
-import {graphql, StaticQuery} from 'gatsby';
+import {graphql, useStaticQuery} from 'gatsby';
 
 import {ExternalLink} from './externalLink';
 import {Note} from './note';
@@ -16,34 +16,27 @@ const siteMetaQuery = graphql`
   }
 `;
 
-export function OrgAuthTokenNote(): JSX.Element {
+export function OrgAuthTokenNote() {
   const location = useLocation();
+  const data = useStaticQuery(siteMetaQuery);
+
+  const url = data.site.siteMetadata.siteUrl + location.pathname;
 
   return (
     <SignedInCheck isUserAuthenticated={false}>
-      <StaticQuery
-        query={siteMetaQuery}
-        render={data => {
-          const url = data.site.siteMetadata.siteUrl + location.pathname;
-          return (
-            <Note>
-              {' '}
-              You can{' '}
-              <ExternalLink
-                href="https://sentry.io/settings/auth-tokens/"
-                target="_blank"
-              >
-                manually create an Auth Token
-              </ExternalLink>{' '}
-              or{' '}
-              <ExternalLink href={`https://sentry.io/auth/login/?next=${url}`}>
-                sign in
-              </ExternalLink>{' '}
-              to create a token directly from the docs.
-            </Note>
-          );
-        }}
-      />
+      <Note>
+        {' '}
+        You can{' '}
+        <ExternalLink href="https://sentry.io/settings/auth-tokens/" target="_blank">
+          manually create an Auth Token
+        </ExternalLink>{' '}
+        or{' '}
+        <ExternalLink href={`https://sentry.io/auth/login/?next=${url}`}>
+          sign in
+        </ExternalLink>{' '}
+        to create a token directly from the docs.
+      </Note>
+      );
     </SignedInCheck>
   );
 }
