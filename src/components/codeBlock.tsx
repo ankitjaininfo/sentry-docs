@@ -13,36 +13,38 @@ import {CodeContext, createOrgAuthToken} from './codeContext';
 
 const KEYWORDS_REGEX = /\b___(?:([A-Z_][A-Z0-9_]*)\.)?([A-Z_][A-Z0-9_]*)___\b/g;
 
-const ORG_AUTH_TOKEN_REGEX = /__ORG_AUTH_TOKEN__/g;
+const ORG_AUTH_TOKEN_REGEX = /___ORG_AUTH_TOKEN___/g;
+
+type ChildrenItem = ReturnType<typeof Children.toArray>[number] | React.ReactNode;
 
 function makeKeywordsClickable(children: React.ReactNode) {
   const items = Children.toArray(children);
 
-  return items.reduce((arr: any[], child) => {
+  return items.reduce((arr: ChildrenItem[], child) => {
     if (typeof child !== 'string') {
       arr.push(child);
       return arr;
     }
 
-    if (KEYWORDS_REGEX.test(child)) {
-      makeProjectKeywordsClickable(arr, child);
-    } else if (ORG_AUTH_TOKEN_REGEX.test(child)) {
+    if (ORG_AUTH_TOKEN_REGEX.test(child)) {
       makeOrgAuthTokenClickable(arr, child);
+    } else if (KEYWORDS_REGEX.test(child)) {
+      makeProjectKeywordsClickable(arr, child);
     } else {
       arr.push(child);
     }
 
     return arr;
-  }, []);
+  }, [] as ChildrenItem[]);
 }
 
-function makeOrgAuthTokenClickable(arr: any[], str: string) {
+function makeOrgAuthTokenClickable(arr: ChildrenItem[], str: string) {
   runRegex(arr, str, ORG_AUTH_TOKEN_REGEX, lastIndex => (
     <OrgAuthTokenCreator key={`org-token-${lastIndex}`} />
   ));
 }
 
-function makeProjectKeywordsClickable(arr: any[], str: string) {
+function makeProjectKeywordsClickable(arr: ChildrenItem[], str: string) {
   runRegex(arr, str, KEYWORDS_REGEX, (lastIndex, match) => (
     <KeywordSelector
       key={`project-keyword-${lastIndex}`}
@@ -54,7 +56,7 @@ function makeProjectKeywordsClickable(arr: any[], str: string) {
 }
 
 function runRegex(
-  arr: any[],
+  arr: ChildrenItem[],
   str: string,
   regex: RegExp,
   cb: (lastIndex: number, match: any[]) => React.ReactNode
@@ -143,14 +145,14 @@ function OrgAuthTokenCreator() {
 
   return (
     <KeywordDropdown onClick={updateToken}>
-        {tokenState === 'none'
-          ? 'Click to generate token'
-          : tokenState === 'loading'
-          ? 'Generating...'
-          : token
-          ? token
-          : 'Error generating token'}
-      </KeywordDropdown>
+      {tokenState === 'none'
+        ? 'Click to generate token'
+        : tokenState === 'loading'
+        ? 'Generating...'
+        : token
+        ? token
+        : 'Error generating token'}
+    </KeywordDropdown>
   );
 }
 
@@ -400,7 +402,7 @@ const ItemButton = styled('button')<{isActive: boolean}>`
   `}
 `;
 
-function CodeWrapper(props) {
+export function CodeWrapper(props) {
   const {children, class: className, ...rest} = props;
 
   return (
