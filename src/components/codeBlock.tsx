@@ -142,8 +142,7 @@ function OrgAuthTokenCreator() {
   };
 
   return (
-    <Fragment>
-      <KeywordDropdown onClick={updateToken}>
+    <KeywordDropdown onClick={updateToken}>
         {tokenState === 'none'
           ? 'Click to generate token'
           : tokenState === 'loading'
@@ -152,7 +151,6 @@ function OrgAuthTokenCreator() {
           ? token
           : 'Error generating token'}
       </KeywordDropdown>
-    </Fragment>
   );
 }
 
