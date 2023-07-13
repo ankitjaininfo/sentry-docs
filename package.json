@@ -21,6 +21,7 @@
     "@sentry/browser": "7.55.2",
     "@sentry/webpack-plugin": "2.2.2",
     "@types/dompurify": "^3.0.2",
+    "@types/js-cookie": "^3.0.3",
     "@types/jest": "^29.5.3",
     "@types/js-yaml": "^3.0.0",
     "@types/node": "^20.3.1",

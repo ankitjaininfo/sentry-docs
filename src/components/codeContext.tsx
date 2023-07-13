@@ -1,4 +1,4 @@
-import {createContext, useEffect, useState} from 'react';
+import React, {createContext, useEffect, useState} from 'react';
 import Cookies from 'js-cookie';
 
 type ProjectCodeKeywords = {
@@ -59,7 +59,7 @@ type UserApiResult = {
 // only fetch them once
 let cachedCodeKeywords: CodeKeywords | null = null;
 
-const DEFAULTS: CodeKeywords = {
+export const DEFAULTS: CodeKeywords = {
   PROJECT: [
     {
       DSN: 'https://examplePublicKey@o0.ingest.sentry.io/0',
@@ -240,7 +240,7 @@ export async function createOrgAuthToken({
   }
 }
 
-export function useCodeContextState(fetcher = fetchCodeKeywords): CodeContextType {
+export function CodeContextProvider({children}: {children: React.ReactNode}) {
   const [codeKeywords, setCodeKeywords] = useState(cachedCodeKeywords ?? DEFAULTS);
 
   const [isLoading, setIsLoading] = useState<boolean>(cachedCodeKeywords ? false : true);
@@ -248,13 +248,13 @@ export function useCodeContextState(fetcher = fetchCodeKeywords): CodeContextTyp
   useEffect(() => {
     if (cachedCodeKeywords === null) {
       setIsLoading(true);
-      fetcher().then((config: CodeKeywords) => {
+      fetchCodeKeywords().then((config: CodeKeywords) => {
         cachedCodeKeywords = config;
         setCodeKeywords(config);
         setIsLoading(false);
       });
     }
-  }, [setIsLoading, setCodeKeywords, fetcher]);
+  }, [setIsLoading, setCodeKeywords]);
 
   // sharedKeywordSelection maintains a global mapping for each "keyword"
   // namespace to the index of the selected item.
@@ -273,5 +273,10 @@ export function useCodeContextState(fetcher = fetchCodeKeywords): CodeContextTyp
     isLoading,
   };
 
-  return result;
+  return <CodeContext.Provider value={result}>{children}</CodeContext.Provider>;
+}
+
+/** For tests only. */
+export function _setCachedCodeKeywords(codeKeywords: CodeKeywords) {
+  cachedCodeKeywords = codeKeywords;
 }
